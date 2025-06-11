@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Java Multithreading Lesson Plan</title>
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed with a top-level tabbed navigation for each of the 5 days, making it easy for the user to jump to a specific lesson. This structure was chosen over a simple long-scroll page to provide a more organized, app-like, and less overwhelming learning experience. The active day is clearly highlighted, and content for each day is loaded into the main view, breaking the dense report into manageable, focused sections. This component-based view (Objectives, Concepts, Code, Questions) within each day enhances readability and information synthesis. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Day 2's `ThreadPoolTaskExecutor` configuration parameters (core size, max size, etc.).
+        - Goal: Compare & Inform. Make abstract configuration values tangible.
+        - Viz Method: A dynamic Bar Chart (Chart.js/Canvas) to visually represent the thread pool settings.
+        - Interaction: Buttons to switch between different predefined pool configurations (e.g., "Balanced", "I/O Intensive"), which dynamically update the chart and an accompanying explanation. This provides an interactive way to understand the trade-offs.
+        - Justification: A visual chart is more intuitive for comparing numerical values than just reading them in text. The interaction encourages exploration and deeper understanding of a core concept.
+        - Library/Method: Chart.js via CDN.
+        - Other Interactions: Code blocks feature a one-click "copy" button for user convenience. Day navigation is handled by JS to show/hide content sections, creating a smooth single-page experience.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f5; /* Zinc 100 */
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        .font-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #5850ec; /* Indigo 600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .code-block {
+            position: relative;
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .copy-button:hover {
+            transform: scale(1.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Java Multithreading & Concurrency</h1>
+            <p class="mt-2 text-lg text-gray-600">An Interactive 5-Day Learning Plan for Spring Boot Developers</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8">
+            <button data-day="1" class="nav-button active text-sm sm:text-base font-semibold py-2 px-4 rounded-lg bg-white shadow-sm hover:bg-gray-100">Day 1: Fundamentals</button>
+            <button data-day="2" class="nav-button text-sm sm:text-base font-semibold py-2 px-4 rounded-lg bg-white shadow-sm hover:bg-gray-100">Day 2: Executors</button>
+            <button data-day="3" class="nav-button text-sm sm:text-base font-semibold py-2 px-4 rounded-lg bg-white shadow-sm hover:bg-gray-100">Day 3: Utilities & Best Practices</button>
+            <button data-day="4" class="nav-button text-sm sm:text-base font-semibold py-2 px-4 rounded-lg bg-white shadow-sm hover:bg-gray-100">Day 4: Spring Boot Integration</button>
+            <button data-day="5" class="nav-button text-sm sm:text-base font-semibold py-2 px-4 rounded-lg bg-white shadow-sm hover:bg-gray-100">Day 5: Microservices</button>
+        </nav>
+
+        <main id="lesson-content">
+            <!-- Day 1 Content -->
+            <section id="day-1" class="content-section active space-y-6">
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Day 1: Core Java Multithreading Fundamentals</h2>
+                    <p class="text-gray-600 mb-6">This first day establishes the essential groundwork for understanding concurrency in Java. We'll cover how threads are created, their lifecycle, and the most fundamental mechanism for ensuring thread safety, the `synchronized` keyword. Mastering these basics is crucial before moving on to more advanced concepts.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-semibold text-lg mb-2 text-indigo-700">Learning Objectives</h3>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>Understand the fundamental concepts of threads in Java.</li>
+                                <li>Learn how to create and manage threads using `Thread`, `Runnable`, and `Callable`.</li>
+                                <li>Grasp the thread lifecycle and basic thread scheduling.</li>
+                                <li>Introduce the `synchronized` keyword for basic thread safety.</li>
+                                <li>Understand the `Future` interface for asynchronous computation results.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg mb-2 text-indigo-700">Concepts Covered</h3>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>Threads vs. Processes</li>
+                                <li>Creating Threads: `Thread`, `Runnable`, `Callable`</li>
+                                <li>Thread Lifecycle</li>
+                                <li>Thread Scheduling</li>
+                                <li>Basic Synchronization: `synchronized`, Intrinsic Locks</li>
+                                <li>`Future` Interface</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-4 text-indigo-700">Hands-on Examples</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">1. Simple Thread Creation</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>// Using Runnable
+class MyRunnable implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("Runnable Thread: " + Thread.currentThread().getName());
+    }
+}
+
+// Using Thread extension
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        System.out.println("Extended Thread: " + Thread.currentThread().getName());
+    }
+}
+
+public class ThreadCreation {
+    public static void main(String[] args) {
+        new Thread(new MyRunnable(), "Runnable-1").start();
+        new MyThread().start();
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">2. Basic `synchronized` Block</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>class Counter {
+    private int count = 0;
+
+    public void increment() {
+        // Synchronize on the instance of the Counter object
+        synchronized (this) {
+            count++;
+            System.out.println(Thread.currentThread().getName() + ": " + count);
+        }
+    }
+}
+
+public class SynchronizedExample {
+    public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        };
+
+        Thread t1 = new Thread(task, "Thread-1");
+        Thread t2 = new Thread(task, "Thread-2");
+
+        t1.start();
+        t2.start();
+
+        t1.join(); // Wait for t1 to finish
+        t2.join(); // Wait for t2 to finish
+        System.out.println("Final count: " + counter.count); // Expected: 2000
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Explain the difference between `Thread` and `Runnable`. When would you use one over the other?</li>
+                        <li>What is the purpose of the `Future` interface?</li>
+                        <li>Describe the different states of a thread.</li>
+                        <li>How does the `synchronized` keyword work? What is a monitor?</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Day 2 Content -->
+            <section id="day-2" class="content-section space-y-6">
+                 <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Day 2: Advanced Concurrency & Executors Framework</h2>
+                    <p class="text-gray-600 mb-6">On Day 2, we move from manual thread management to the powerful Executors Framework, a cornerstone of modern Java concurrency. You will learn how to use thread pools to efficiently manage thread lifecycles, reducing overhead and improving application performance and stability. We will also explore more advanced synchronization tools beyond `synchronized`.</p>
+                    
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Interactive: Visualizing a Thread Pool</h3>
+                    <p class="text-gray-600 mb-4">Use the buttons below to see how different configurations of a `ThreadPoolTaskExecutor` might look. This helps visualize the relationship between core threads, maximum threads, and the task queue.</p>
+                    <div class="chart-container mb-4">
+                        <canvas id="threadPoolChart"></canvas>
+                    </div>
+                    <div class="flex justify-center gap-2">
+                        <button id="btn-balanced" class="bg-indigo-500 text-white px-3 py-1 rounded-md text-sm">Balanced</button>
+                        <button id="btn-io" class="bg-teal-500 text-white px-3 py-1 rounded-md text-sm">I/O Intensive</button>
+                        <button id="btn-cpu" class="bg-rose-500 text-white px-3 py-1 rounded-md text-sm">CPU Intensive</button>
+                    </div>
+                    <p id="chart-explanation" class="text-center mt-2 text-sm text-gray-600"></p>
+                </div>
+                
+                 <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-4 text-indigo-700">Hands-on Examples</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">1. Using `ReentrantLock`</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>import java.util.concurrent.locks.ReentrantLock;
+
+class SafeCounter {
+    private int count = 0;
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public void increment() {
+        lock.lock(); // Acquire the lock
+        try {
+            count++;
+            System.out.println(Thread.currentThread().getName() + ": " + count);
+        } finally {
+            lock.unlock(); // Release the lock in a finally block
+        }
+    }
+}
+//... main method similar to SynchronizedExample
+</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">2. Using `ExecutorService` with `Callable` and `Future`</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>import java.util.concurrent.*;
+
+public class ExecutorServiceExample {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        Callable&lt;Integer&gt; task1 = () -> {
+            TimeUnit.SECONDS.sleep(2);
+            return 10;
+        };
+        Callable&lt;Integer&gt; task2 = () -> {
+            TimeUnit.SECONDS.sleep(1);
+            return 20;
+        };
+
+        Future&lt;Integer&gt; future1 = executor.submit(task1);
+        Future&lt;Integer&gt; future2 = executor.submit(task2);
+
+        Integer result1 = future1.get(); // Blocks
+        Integer result2 = future2.get(); // Blocks
+
+        System.out.println("Result 1: " + result1);
+        System.out.println("Result 2: " + result2);
+
+        executor.shutdown();
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>When would you use `ReentrantLock` instead of `synchronized`?</li>
+                        <li>Explain the difference between `volatile` and `synchronized`. When is `volatile` appropriate?</li>
+                        <li>What are `Atomic` variables, and why are they useful?</li>
+                        <li>Describe the different types of `ExecutorService` thread pools provided by `Executors`. When would you choose each?</li>
+                        <li>How do you properly shut down an `ExecutorService`?</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Day 3 Content -->
+            <section id="day-3" class="content-section space-y-6">
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Day 3: Concurrency Utilities & Best Practices</h2>
+                    <p class="text-gray-600 mb-6">Day 3 focuses on thread coordination and robust design. You'll learn about powerful utilities like `CountDownLatch` and `Semaphore` for managing complex interactions between threads. We will also introduce `CompletableFuture`, a modern approach to asynchronous programming that dramatically simplifies chaining and composing async operations. Finally, we'll cover essential best practices to avoid common, hard-to-debug issues like deadlocks.</p>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                         <div>
+                            <h3 class="font-semibold text-lg mb-2 text-indigo-700">Concepts Covered</h3>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                               <li>`CountDownLatch`, `CyclicBarrier`, `Semaphore`</li>
+                               <li>`CompletableFuture` Introduction</li>
+                               <li>Avoiding Deadlocks & Race Conditions</li>
+                               <li>Thread Safety & Immutability</li>
+                               <li>Liveness Issues (Starvation, Livelock)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>Explain `CountDownLatch` and `CyclicBarrier`. What's the main difference?</li>
+                                <li>When would you use a `Semaphore`? Provide a real-world example.</li>
+                                <li>What are the four conditions for a deadlock? How can you prevent them?</li>
+                                <li>How does `CompletableFuture` simplify asynchronous programming compared to `Future`?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-4 text-indigo-700">Hands-on Examples</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">1. Using `CountDownLatch`</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>import java.util.concurrent.*;
+
+public class CountDownLatchExample {
+    public static void main(String[] args) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(3); // Wait for 3 tasks
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        for (int i = 0; i < 3; i++) {
+            final int taskId = i + 1;
+            executor.submit(() -> {
+                try {
+                    System.out.println("Task " + taskId + " started...");
+                    TimeUnit.SECONDS.sleep(taskId); // Simulate work
+                    System.out.println("Task " + taskId + " finished.");
+                    latch.countDown(); // Decrement
+                } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            });
+        }
+
+        System.out.println("Main thread waiting...");
+        latch.await(); // Main thread waits until latch is zero
+        System.out.println("All tasks completed.");
+        executor.shutdown();
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">2. Basic `CompletableFuture`</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>import java.util.concurrent.*;
+
+public class CompletableFutureIntro {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        // Chaining: apply a function to the result
+        CompletableFuture&lt;String&gt; greetingFuture = CompletableFuture.supplyAsync(() -> "World")
+                .thenApply(name -> "Hello, " + name + "!");
+
+        System.out.println(greetingFuture.get());
+
+        // Combining: when both are complete
+        CompletableFuture&lt;String&gt; combined = CompletableFuture.supplyAsync(() -> "First")
+            .thenCombine(CompletableFuture.supplyAsync(() -> "Second"), 
+                (p1, p2) -> p1 + " and " + p2);
+
+        System.out.println(combined.get());
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Day 4 Content -->
+            <section id="day-4" class="content-section space-y-6">
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Day 4: Integration with Spring Boot</h2>
+                     <p class="text-gray-600 mb-6">Now we bring our concurrency knowledge into the real world of enterprise applications. Day 4 is all about integrating with Spring Boot. You'll learn how to leverage Spring's powerful abstractions, like the `@Async` annotation and `TaskExecutor`, to write clean, declarative asynchronous code. We'll also cover the important and often tricky topic of using `ThreadLocal` safely within a Spring context.</p>
+
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Concepts Covered</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li>Using `@Async` and `@EnableAsync`</li>
+                        <li>Configuring custom `TaskExecutor` / `ThreadPoolTaskExecutor` beans</li>
+                        <li>`ThreadLocal` in a Spring context (`RequestContextHolder`)</li>
+                        <li>Asynchronous controllers (`DeferredResult`, `Callable`)</li>
+                    </ul>
+                </div>
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                     <h3 class="font-semibold text-lg mb-4 text-indigo-700">Hands-on Examples</h3>
+                     <div class="space-y-6">
+                         <div>
+                            <h4 class="font-medium text-gray-800 mb-2">1. Spring Boot `@Async` Service</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>@Service
+public class AsyncService {
+    @Async
+    public CompletableFuture&lt;String&gt; doSomethingAsyncWithResult(String input) {
+        try {
+            TimeUnit.SECONDS.sleep(2);
+            String result = "Processed: " + input;
+            return CompletableFuture.completedFuture(result);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+}
+
+@RestController
+public class MyController {
+    @Autowired private AsyncService asyncService;
+
+    @GetMapping("/trigger-async-result")
+    public CompletableFuture&lt;String&gt; triggerAsyncWithResult(@RequestParam String input) {
+        // Spring handles the non-blocking response
+        return asyncService.doSomethingAsyncWithResult(input);
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-2">2. Custom `ThreadPoolTaskExecutor` Configuration</h4>
+                            <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                                <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                                <pre><code>@Configuration
+@EnableAsync
+public class AsyncConfig {
+    @Bean(name = "customTaskExecutor")
+    public Executor customTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        executor.setThreadNamePrefix("MyCustomAsync-");
+        executor.initialize();
+        return executor;
+    }
+}
+// To use: @Async("customTaskExecutor")
+</code></pre>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>How does Spring's `@Async` annotation work internally? What are its limitations?</li>
+                        <li>How can you provide a custom `TaskExecutor` for `@Async` methods? Why would you do that?</li>
+                        <li>Explain `ThreadLocal`. When is it useful, and what are the potential issues in a Spring web application?</li>
+                        <li>How can you handle asynchronous processing in a Spring Boot REST API?</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Day 5 Content -->
+            <section id="day-5" class="content-section space-y-6">
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Day 5: Microservices Use Cases & Advanced Topics</h2>
+                    <p class="text-gray-600 mb-6">The final day synthesizes everything we've learned and applies it to the modern microservices landscape. The key challenge in microservices is orchestration—managing calls to multiple, independent services. You'll learn how to use `CompletableFuture` to execute these calls in parallel, drastically reducing response times. We'll also touch on scheduled tasks and give a brief overview of reactive programming as an alternative concurrency model.</p>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-4 text-indigo-700">Hands-on Example: Parallel Microservice Calls</h3>
+                    <p class="text-gray-600 mb-4">This example demonstrates an `OrchestrationService` that calls three external services concurrently using `CompletableFuture`. The total time taken will be close to the longest single call, not the sum of all calls, showcasing the power of parallel execution.</p>
+                    <div class="space-y-6">
+                        <div class="code-block bg-gray-800 text-white p-4 rounded-lg font-code text-sm">
+                            <button class="copy-button bg-gray-600 text-white text-xs px-2 py-1 rounded hover:bg-gray-500">Copy</button>
+                            <pre><code>@Service
+public class OrchestrationService {
+    @Autowired private ExternalServiceSimulator simulator;
+
+    public String getAggregatedData() throws ExecutionException, InterruptedException {
+        long startTime = System.currentTimeMillis();
+
+        // Initiate all calls concurrently
+        CompletableFuture&lt;String&gt; futureA = simulator.callServiceA(); // 2s delay
+        CompletableFuture&lt;String&gt; futureB = simulator.callServiceB(); // 1s delay
+        CompletableFuture&lt;String&gt; futureC = simulator.callServiceC()  // 3s delay
+            .exceptionally(ex -> "Service C Failed"); // Handle failure
+
+        // Wait for all to complete and combine results
+        CompletableFuture.allOf(futureA, futureB, futureC).join();
+
+        String result = String.format("A:%s, B:%s, C:%s", 
+            futureA.get(), futureB.get(), futureC.get());
+        
+        long duration = System.currentTimeMillis() - startTime;
+        System.out.println("Total time: " + duration + "ms"); // Should be ~3000ms
+        return result;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Next Steps & Interview Questions</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                         <div>
+                            <h4 class="font-medium text-gray-800 mb-2">Learning Roadmap</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700">
+                               <li>Deepen Reactive Programming (Project Reactor)</li>
+                               <li>Explore Distributed Transactions (Saga pattern)</li>
+                               <li>Learn Message Queues (Kafka, RabbitMQ)</li>
+                               <li>Practice with Monitoring & Debugging Tools</li>
+                            </ul>
+                        </div>
+                        <div>
+                             <h4 class="font-medium text-gray-800 mb-2">Potential Interview Questions</h4>
+                             <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                <li>Why is multithreading important in microservices?</li>
+                                <li>How would you implement parallel calls to multiple downstream microservices?</li>
+                                <li>Difference between `@Scheduled(fixedRate)` and `(fixedDelay)`?</li>
+                                <li>When to choose Spring WebFlux over traditional Spring MVC?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function switchDay(day) {
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.day === day);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === `day-${day}`);
+                });
+            }
+            
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const day = button.dataset.day;
+                    switchDay(day);
+                });
+            });
+
+            // --- Copy Button Logic ---
+            const copyButtons = document.querySelectorAll('.copy-button');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const code = button.nextElementSibling.textContent;
+                    const textarea = document.createElement('textarea');
+                    textarea.value = code;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        button.textContent = 'Copied!';
+                    } catch (err) {
+                        button.textContent = 'Failed!';
+                    }
+                    document.body.removeChild(textarea);
+
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+            
+            // --- Chart.js Logic for Day 2 ---
+            const ctx = document.getElementById('threadPoolChart');
+            if (ctx) {
+                const chartData = {
+                    labels: ['Core Threads', 'Max Threads', 'Queue Capacity'],
+                    datasets: [{
+                        label: 'Pool Size',
+                        data: [5, 10, 25],
+                        backgroundColor: [
+                            'rgba(129, 140, 248, 0.5)', // Indigo 400
+                            'rgba(99, 102, 241, 0.5)', // Indigo 500
+                            'rgba(79, 70, 229, 0.5)', // Indigo 600
+                        ],
+                        borderColor: [
+                            'rgba(129, 140, 248, 1)',
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(79, 70, 229, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                const threadPoolChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Count'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const chartExplanation = document.getElementById('chart-explanation');
+
+                function updateChart(data, explanation) {
+                    threadPoolChart.data.datasets[0].data = data;
+                    threadPoolChart.update();
+                    chartExplanation.textContent = explanation;
+                }
+
+                document.getElementById('btn-balanced').addEventListener('click', () => {
+                    updateChart([5, 10, 25], 'A balanced pool for mixed workloads.');
+                });
+                document.getElementById('btn-io').addEventListener('click', () => {
+                    updateChart([10, 50, 100], 'Larger pool for I/O-bound tasks that spend time waiting.');
+                });
+                document.getElementById('btn-cpu').addEventListener('click', () => {
+                     const coreCount = navigator.hardwareConcurrency || 4;
+                    updateChart([coreCount, coreCount, 10], `Small pool matching CPU cores (${coreCount}) for CPU-bound tasks.`);
+                });
+                
+                // Initial state
+                 updateChart([5, 10, 25], 'A balanced pool for mixed workloads.');
+            }
+        });
+    </script>
+
+</body>
+</html>
