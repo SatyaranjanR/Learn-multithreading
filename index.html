@@ -190,6 +190,14 @@ public class SynchronizedExample {
                 </div>
 
                 <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Coding Challenges</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Implement a simple `Runnable` that prints numbers 1 to 5 with a 100ms delay between each print. Create and start two such threads.</li>
+                        <li>Create a shared `Counter` class with an `increment` method. Demonstrate a race condition when two threads try to increment it concurrently without synchronization. Then, fix it using `synchronized`.</li>
+                    </ul>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
                     <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700">
                         <li>Explain the difference between `Thread` and `Runnable`. When would you use one over the other?</li>
@@ -280,6 +288,14 @@ public class ExecutorServiceExample {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Coding Challenges</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Create a `ThreadPoolTaskExecutor` (or use `Executors.newFixedThreadPool`) to process 10 tasks. Each task should be a `Callable` that simulates a long-running operation (e.g., `Thread.sleep(random_time)` between 1 and 3 seconds) and returns a unique ID. Collect and print all results.</li>
+                        <li>Implement a producer-consumer problem using a `BlockingQueue` and `ExecutorService`.</li>
+                    </ul>
                 </div>
 
                 <div class="p-6 bg-white rounded-xl shadow-md">
@@ -383,6 +399,15 @@ public class CompletableFutureIntro {
                         </div>
                     </div>
                 </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Coding Challenges</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Use `CountDownLatch` to ensure that a main thread only starts processing after 3 worker threads have completed their initial setup.</li>
+                        <li>Write a program that uses `Semaphore` to limit concurrent access to a shared resource (e.g., a database connection pool simulation) to 3 threads at a time, even if more threads request access.</li>
+                        <li>Refactor a blocking I/O operation (simulated with `Thread.sleep`) using `CompletableFuture` to make it non-blocking. Chain multiple `CompletableFuture` operations.</li>
+                    </ul>
+                </div>
             </section>
             
             <!-- Day 4 Content -->
@@ -457,6 +482,15 @@ public class AsyncConfig {
                         </div>
                      </div>
                 </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Coding Challenges</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Create a Spring Boot service method annotated with `@Async` that takes a `String` input and returns a `CompletableFuture<String>`. Call this service from a REST controller and demonstrate its asynchronous nature.</li>
+                        <li>Configure a custom `ThreadPoolTaskExecutor` bean in your Spring Boot application and ensure your `@Async` methods use this custom executor.</li>
+                    </ul>
+                </div>
+
                 <div class="p-6 bg-white rounded-xl shadow-md">
                     <h3 class="font-semibold text-lg mb-2 text-indigo-700">Potential Interview Questions</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700">
@@ -507,6 +541,14 @@ public class OrchestrationService {
 }</code></pre>
                         </div>
                     </div>
+                </div>
+
+                <div class="p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-700">Coding Challenges</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Simulate an order processing microservice that needs to call a "product details service" and a "user profile service" concurrently to fulfill an order. Use `CompletableFuture.allOf()` to wait for both responses and aggregate them. Handle potential failures from one of the downstream services.</li>
+                        <li>Implement a background scheduled task in Spring Boot using `@Scheduled` that runs every 30 seconds and logs a message, simulating a nightly data cleanup or report generation.</li>
+                    </ul>
                 </div>
 
                  <div class="p-6 bg-white rounded-xl shadow-md">
